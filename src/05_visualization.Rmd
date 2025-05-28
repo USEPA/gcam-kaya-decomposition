@@ -1,0 +1,159 @@
+---
+title: "Kaya Visualizations"
+author: 
+  - Farnaz Nojavan
+  - Joyce Kim
+output: html_document
+date: "2025-05-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, include = FALSE}
+# load necessary packages
+source(here::here("src/packages.R"))
+source(here::here("src/functions.R"))
+```
+
+```{r read emisinoutpopgdp data }
+
+wide_delta_co2in2050_with_total_sector_percentages <- readRDS(here("output/data/wide_delta_co2in2050_with_total_sector_percentages.rds"))
+
+wide_delta_co2in2050_with_total_state_percentages <- readRDS(here("output/data/wide_delta_co2in2050_with_total_state_percentages.rds"))
+```
+
+
+
+```{r Heatmap}
+df_heatmap <- wide_delta_co2in2050_with_total_sector_percentages %>% 
+  select(2:53) %>% 
+  slice(1:43)
+
+# Melt the data for visualization
+df_heatmap_melted <- melt(df_heatmap, id.vars = "sector")
+
+# Assuming df_heatmap_melted is your melted data frame
+ggplot(df_heatmap_melted, aes(x = variable, y = sector, fill = value)) +
+  geom_tile() +
+  scale_fill_viridis(option = "viridis") +  # Change 'viridis' to 'plasma', 'magma', or 'inferno' as needed
+  labs(title = "% Change in Each Sector", x = "State", y = "Sector") +
+  theme_minimal()
+
+custom_colors <- colorRampPalette(c("darkblue", "lightblue", "yellow", "orange", "red"))(256)
+
+# Create an interactive heatmap using plotly
+plot_ly(df_heatmap_melted, x = ~variable, y = ~sector, z = ~value, type = "heatmap", colors = custom_colors) %>%
+  layout(title = "% Change in Each Sector",
+         xaxis = list(title = "State"),
+         yaxis = list(title = "Sector"))
+```
+
+```{r vertical Boxplot State}
+df_state_boxplot <- wide_delta_co2in2050_with_total_state_percentages %>% 
+  select(-c("grand_total")) %>% 
+  slice(1:(nrow(wide_delta_co2in2050_with_total_state_percentages)-1))
+
+# Transform data from wide to long format
+df_long_state_boxplot <- df_state_boxplot %>%
+  pivot_longer(
+    cols = -c(sector, category),
+    names_to = "State",
+    values_to = "CO2_Reduction"
+  )
+
+# Create box plots with facets for each category
+ggplot(df_long_state_boxplot, aes(x = sector, y = CO2_Reduction)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(aes(color = State), width = 0.2, alpha = 0.7) +
+  geom_text(aes(label = State, color = State), hjust = -0.3, size = 3) +
+  scale_color_viridis_d(option = "D") +
+  theme_minimal() +
+  labs(title = "Sectoral Contributions (%) for States' CO2 Emission Reductions in 2050, Decarbonization minus Reference",
+       x = "Sector",
+       y = "CO2 Emission Reductions in 2050") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
+  facet_grid(~ category, scales = "free_x", space = "free_x")  # Facet by category
+```
+
+
+
+```{r Radar Chart}
+
+# Prepare data for radar chart
+# Add max and min values for radar chart scaling
+df_radar <- wide_delta_co2in2050_with_total_state_percentages %>% 
+  select(-c("category", "grand_total")) %>% 
+  slice(1:(nrow(wide_delta_co2in2050_with_total_state_percentages)-1))
+
+# Define states in each region using abbreviations
+regions <- list(
+  Middle_Atlantic = c("NY", "NJ", "PA"),
+  New_England = c("ME", "NH", "VT", "MA", "RI", "CT"),
+  East_North_Central = c("OH", "IN", "IL", "MI", "WI"),
+  South_Atlantic = c("DE", "MD", "DC", "VA", "WV", "NC", "SC", "GA", "FL"),
+  East_South_Central = c("KY", "TN", "AL", "MS"),
+  West_North_Central = c("MN", "IA", "MO", "ND", "SD", "NE", "KS"),
+  Pacific = c("AK", "WA", "OR", "CA", "HI"),
+  Mountain = c("MT", "ID", "WY", "CO", "NM", "AZ", "UT", "NV"),
+  West_South_Central = c("TX", "OK", "AR", "LA")
+)
+
+
+for (region in names(regions)) {
+  # Get the states in the current region
+  selected_states <- regions[[region]]
+  # Select only the desired states
+  df_selected <- df_radar[, c("sector", selected_states)]
+  
+  # Transpose the data so that sectors are rows and selected states are columns
+  df_t_radar <- as.data.frame(t(df_selected[,-1]))
+  
+  # Set the column names to the sectors
+  colnames(df_t_radar) <- wide_delta_co2in2050_with_total_state_percentages$sector[-43]
+  
+  # # Add max and min values for radar chart scaling
+  # df_t_radar <- rbind(apply(df_t_radar, 2, max), apply(df_t_radar, 2, min), df_t_radar)
+  # 
+  # # Set row names for radar chart
+  # rownames(df_t_radar) <- c("Max", "Min", selected_states)
+  
+  
+  rownames(df_t_radar) <- c(selected_states)
+  
+  # # Calculate the global minimum and maximum
+  # global_min <- min(df_t_radar, na.rm = TRUE)
+  # global_max <- max(df_t_radar, na.rm = TRUE)
+
+  df_t_radar <- rbind(rep(100, length(df_t_radar)), rep(0, length(df_t_radar)), df_t_radar)
+
+  
+  # Remove columns that are all NA
+  df_radar_cleaned <- df_t_radar %>%
+    select(where(~ !all(is.na(.))))
+  
+  # Replace NA with 0 in remaining columns
+  df_radar_final <- df_radar_cleaned %>%
+    mutate(across(everything(), ~ replace_na(., 0)))
+
+  # Choose a color palette from viridis
+  colors <- viridis(length(selected_states))
+
+  # Create radar chart
+  radarchart(df_radar_final, axistype=1,
+             # Customize the appearance
+             pcol=colors, pfcol=NA, plwd=2, plty=1,
+             title= gsub("_", " ", region),
+             # Add legend
+             vlcex=0.8, cglcol="grey", cglty=1, axislabcol="grey", caxislabels=seq(0,100,20),
+             # Add custom legend
+             legend.pos = "topright",
+             legend = selected_states)
+  
+  # Add legend separately if needed
+  legend(x=2, y=1, legend=selected_states, bty="n", pch=20, col=colors, text.col="black", cex=0.8, pt.cex=1.5)
+}
+
+
+```

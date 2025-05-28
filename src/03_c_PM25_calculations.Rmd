@@ -1,0 +1,80 @@
+---
+title: "PM 2.5"
+author: 
+  - Farnaz Nojavan
+  - Joyce Kim
+output: html_document
+date: "2025-05-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, include = FALSE}
+# load necessary packages
+source(here::here("src/packages.R"))
+source(here::here("src/functions.R"))
+```
+
+
+```{r read emisinoutpopgdp data }
+emisinoutpopgdp <- readRDS(here("output/data/emisinoutpopgdp.rds"))
+```
+
+
+```{r calculate sectoral-damage for PM2.5}
+# Repeat the filtering scenario process for PM2.5 in the other policy scenario
+
+sectoral_pm25 <- emisinoutpopgdp %>%
+  filter(scenario == "GLIMPSE1.2-Ref_damages" & ghg == "PM2.5") %>%
+  group_by(region, sector) %>%
+  summarize(across(starts_with("W"), 
+                   \(x) sum(x, na.rm=TRUE), # Use anonymous function for additional arguments
+                   .names = "sum_{col}")) %>% 
+  ungroup() %>% 
+  mutate(
+    PM2.5in2020 = rowSums(select(., ends_with("2020")), na.rm = TRUE),
+    PM2.5in2025 = rowSums(select(., ends_with("2025")), na.rm = TRUE),
+    PM2.5in2030 = rowSums(select(., ends_with("2030")), na.rm = TRUE),
+    PM2.5in2035 = rowSums(select(., ends_with("2035")), na.rm = TRUE),
+    PM2.5in2040 = rowSums(select(., ends_with("2040")), na.rm = TRUE),
+    PM2.5in2045 = rowSums(select(., ends_with("2045")), na.rm = TRUE),
+    PM2.5in2050 = rowSums(select(., ends_with("2050")), na.rm = TRUE)
+  ) %>% 
+  mutate(region_sector = str_c(region, sector, sep = ":")) %>% 
+  group_by(region) %>% 
+  mutate(
+    rank_2035 = min_rank(PM2.5in2035),
+    rank_2050 = min_rank(PM2.5in2050)
+  ) %>%
+  ungroup() #Ensure no lingering groupings
+```
+
+```{r calculate sectoral_deepdecarbo for each state, include = FALSE}
+state_year_sectoral_pm25 <- create_state_year_sectoral(sectoral_data = sectoral_pm25,
+                                                             states = c("AK", "CA", "NY"),
+                                                             years = c(2035, 2050),
+                                                             scenario = "GLIMPSE1.2-Ref_damages",
+                                                             ghg = "PM2.5")
+
+# Access individual data frames using state_sectoral_ref_damage[["AK_2035"]], state_sectoral_ref_damage[["CA_2050"]], etc.
+```
+
+
+
+```{r create sectoral plot for specific year state}
+create_state_year_specific_sectoral_plot(state_year_sectoral_data = state_year_sectoral_pm25,
+                                         state = "AK",
+                                         year = 2035, 
+                                         ghg = "PM2.5")
+```
+
+```{r create and save plots NOx}
+# Call the function with the list and desired output folder
+# Save the figures of selected states and years into the output folder
+create_and_save_plots(state_year_sectoral_pm25,
+                                  emission_type = "PM2.5",
+                                  output_folder ="output/figures/PM25",
+                      type = "PM2.5")
+```

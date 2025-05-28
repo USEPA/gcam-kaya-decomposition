@@ -1,0 +1,93 @@
+---
+title: "Untitled"
+author: 
+  - Farnaz Nojavan
+  - Joyce Kim
+output: html_document
+date: "2025-05-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r packages, include = FALSE}
+# load necessary packages
+source(here::here("src/packages.R"))
+source(here::here("src/functions.R"))
+```
+
+```{r read emisinoutpopgdp data }
+emisinoutpopgdp <- readRDS(here("output/data/emisinoutpopgdp.rds"))
+```
+
+
+```{r calculate sectoral-ref table, include = ALSE}
+# Filter reference case and rank by emissions calculated from Kaya Identity
+
+sectoral_ref <- emisinoutpopgdp %>%
+  filter(scenario == "GLIMPSEv1.01-Reference" & ghg == "CO2" & units.o == "EJ") %>%
+  group_by(region, sector) %>%
+  summarize(across(starts_with("W"), 
+                   sum, 
+                   na.rm = TRUE,
+                   .names = "sum_{col}")) %>% 
+  ungroup() %>% 
+  mutate(
+    co2in2020 = rowSums(select(., ends_with("2020")), na.rm = TRUE),
+    co2in2025 = rowSums(select(., ends_with("2025")), na.rm = TRUE),
+    co2in2030 = rowSums(select(., ends_with("2030")), na.rm = TRUE),
+    co2in2035 = rowSums(select(., ends_with("2035")), na.rm = TRUE),
+    co2in2040 = rowSums(select(., ends_with("2040")), na.rm = TRUE),
+    co2in2045 = rowSums(select(., ends_with("2045")), na.rm = TRUE),
+    co2in2050 = rowSums(select(., ends_with("2050")), na.rm = TRUE)
+  ) %>% 
+  mutate(region_sector = str_c(region, sector, sep = ":")) %>% 
+  group_by(region) %>% 
+  mutate(
+    rank_2035 = min_rank(co2in2035),
+    rank_2050 = min_rank(co2in2050)
+  )
+
+# Define the directory path
+dir_path <- here("output/data")
+
+# Check if the directory exists, if not, create it
+if (!dir.exists(dir_path)) {
+  dir.create(dir_path, recursive = TRUE)
+}
+
+# Write the CSV file with the file name specified in the function call
+write.csv(sectoral_ref, file.path(dir_path, "sectoral_ref.csv"), row.names = FALSE)
+```
+
+
+```{r state_sectoral_ref for each year/state}
+state_year_sectoral_ref <- create_state_year_sectoral(sectoral_data = sectoral_ref,
+                                                      states = c("AL", "CA", "NY"), 
+                                                     years = c(2035, 2050), 
+                                                     scenario = "GLIMPSEv1.01-Reference", 
+                                                     ghg = "CO2",
+                                                     units.o = "EJ" )
+# Access individual data frames using state_year_sectoral_ref[["AK_2035"]], state_year_sectoral_ref[["CA_2050"]], etc.
+```
+
+```{r create sectoral data & plot for specific year state}
+#Plot stacked-bar chart of emission decomposition factors for specific state and specific year
+create_state_year_specific_sectoral_plot(state_year_sectoral_data = state_year_sectoral_ref,
+                                         state = "AL",
+                                         year = 2035, 
+                                         ghg = "CO2",
+                                         type = "ref")
+```
+
+
+```{r create and save plots}
+
+# Call the function with the list and desired output folder
+create_and_save_plots(state_year_sectoral_ref,
+                      emission_type = "CO2",
+                      output_folder = "output/figures/ref",
+                      type = "ref")
+```

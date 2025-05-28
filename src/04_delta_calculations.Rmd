@@ -1,0 +1,145 @@
+---
+title: "Delta"
+author: 
+  - Farnaz Nojavan
+  - Joyce Kim
+date: "2025-04-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, include = FALSE}
+# load necessary packages
+source(here::here("src/packages.R"))
+source(here::here("src/functions.R"))
+```
+
+```{r Read data, include = FALSE}
+
+# Read csv files damage and deepdecarbo
+sectoral_ref <- read_csv(here("output/data/sectoral_ref.csv"))
+
+sectoral_deepdecarbo <- read_csv(here("output/data/sectoral_deepdecarbo.csv")) 
+```
+
+```{r calculate delta}
+delta_data  <- sectoral_deepdecarbo %>%
+  full_join(sectoral_ref, by = c("region", "sector", "region_sector")) %>% 
+  select(-c("E2020",
+            "E2025",
+            "E2030",
+            "E2035",
+            "E2040",
+            "E2045",
+            "E2050",
+            "rank_2035.x",
+            "rank_2050.x",
+            "rank_2035.y",
+            "rank_2050.y" ))
+
+
+# Apply function to the dataset
+delta <- create_delta(delta_data)
+```
+
+
+
+```{r sector categories}
+# Define the categories list
+categories <- list(
+  Building = c("comm cooking", "comm cooling", "comm heating", 
+               "comm hot water", "comm other", "resid clothes dryers", 
+               "resid cooking", "resid heating", "resid hot water", 
+               "resid other"),
+  
+  Industry = c("ammonia", "biomass", "biomass liquids", "cement", "coal to liquids", 
+               "gas pipeline", "gas processing", "gas to liquids", 
+               "H2 central production", "H2 wholesale dispensing",
+               "industrial processes", "other industrial energy use",
+               "other industrial feedstocks", "urban processes",
+               "industrial energy use", "industrial feedstocks", 
+               "N fertilizer", "oil refining", "process heat cement", 
+               "process heat dac", "gas processing", "H2 forecourt production"),
+  
+  Bioenergy = c("regional biomass", "regional biomassOil", "regional corn for ethanol"),
+  
+  Power = c("backup_electricity", "base load generation", "csp_backup", "intermediate generation", "peak generation", "subpeak generation"),
+  
+  Transportation = c("trn_aviation_intl", "trn_freight", "trn_freight_road", 
+                     "trn_pass", "trn_pass_road", "trn_pass_road_LDV", 
+                     "trn_pass_road_LDV_4W", "trn_shipping_intl"),
+  
+  CO2_Removal = c("CO2 removal")
+)
+
+# # Convert the list to a tibble
+# categories_tibble <- enframe(categories, name = "category", value = "sector") %>%
+#   unnest(cols = c(sector))
+# 
+# # Write the tibble to a CSV file
+# write.csv(categories_tibble, file = here:here("data/category_sector.csv"), row.names = FALSE)
+
+# category <- read.csv(here:here("data/category_sector.csv"))
+
+# Add the category column using mutate and the lookup function
+delta_cat <- delta %>%
+  mutate(category = sapply(sector, lookup_category))
+
+# Summarize your data to ensure unique combinations before pivoting
+unique_delta <- delta_cat %>%
+  distinct(sector, region, .keep_all = TRUE)
+
+wide_delta <- unique_delta %>%
+  select(category, sector, region, co2in2050) %>% 
+  pivot_wider(
+    names_from = region, 
+    values_from = co2in2050) %>% 
+  # # Add a row that is the sum of each column
+  # bind_rows(summarise(across(everything(), sum, na.rm = TRUE))) 
+  # # Add a column that is the sum of each row
+  mutate(grand_total = rowSums(select(., where(is.numeric)), na.rm = TRUE))
+
+wide_delta_co2in2050_with_total <- wide_delta %>%
+  bind_rows(
+    wide_delta %>%
+      summarise(across(where(is.numeric), sum, na.rm = TRUE)) %>%
+      mutate(category = "State Total CO2 in 2050", sector = NA)
+  )
+
+```
+
+
+```{r percent change in each state}
+# Assuming the last row contains the "State Total CO2 in 2050" and you have columns named 'sector' and 'category'
+# Extract the "State Total CO2 in 2050" row
+state_total <- wide_delta_co2in2050_with_total %>% filter(category == "State Total CO2 in 2050")
+
+# Calculate percentages for each state column
+# Assuming the first 50 columns are the state columns
+wide_delta_co2in2050_with_total_state_percentages <- wide_delta_co2in2050_with_total %>%
+  mutate(across(3:54, ~ . / state_total[[cur_column()]] * 100))
+```
+
+```{r percent change in each sector}
+# Exclude the first two columns (sector and category) and the last row (state total)
+wide_delta_co2in2050_with_total_sector_percentages <- wide_delta_co2in2050_with_total %>%
+  select(-c("USA")) %>% 
+  # Calculate percentages 
+  mutate(across(3:54, ~ .x / wide_delta_co2in2050_with_total$grand_total * 100))
+
+```
+
+
+```{r write .RDS}
+
+# Save the data frame to an .rds file
+saveRDS(wide_delta_co2in2050_with_total_sector_percentages, file = here("output/data/wide_delta_co2in2050_with_total_sector_percentages.rds"))
+
+# Save the data frame to an .rds file
+saveRDS(wide_delta_co2in2050_with_total_state_percentages, file = here("output/data/wide_delta_co2in2050_with_total_state_percentages.rds"))
+
+```
+

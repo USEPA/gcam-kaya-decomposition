@@ -1,0 +1,209 @@
+---
+title: "kaya"
+author: 
+  - Farnaz Nojavan
+  - Joyce Kim
+date: "2025-05-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, include = FALSE}
+# load necessary packages
+source(here::here("src/packages.R"))
+source(here::here("src/functions.R"))
+```
+
+```{r Read data, include = FALSE}
+
+# Read csv files damage and deepdecarbo
+pop_by_reg <- read_csv(here("data/Population_by_region.csv")) %>%
+  clean_names()
+gdp_per_capita_ppp_by_reg<- read_csv(here("data/GDP_per_capita_PPP_by_region.csv")) %>%
+  clean_names()
+emis_by_tech <- read_csv(here("data/All_emissions_by_tech_damage.csv")) %>%
+  clean_names()
+inputs_by_tech <- read_csv(here("data/Inputs_by_tech_airco2rename.csv")) %>%
+  clean_names()
+outputs_by_tech<- read_csv(here("data/Outputs_by_tech.csv")) %>%
+  clean_names()
+
+```
+
+
+```{r calculations, include = FALSE}
+# make summary table for emis, inputs and outputs files
+emis_summary <- emis_by_tech %>%
+  group_by(scenario, region, sector, ghg, units) %>%
+  summarize(across(starts_with("x"), sum, .names = "E{str_remove(.col, 'x')}"))
+
+inputs_summary <- inputs_by_tech %>%
+  group_by(scenario, region, sector, units) %>%
+  summarize(across(starts_with("x"), sum, .names = "In{str_remove(.col, 'x')}"))
+
+outputs_summary <- outputs_by_tech %>%
+  group_by(scenario, region, sector, units) %>%
+  summarize(across(starts_with("x"), sum, .names = "Out{str_remove(.col, 'x')}"))
+
+# merge
+# change column name in emission
+
+emis_by_tech <- emis_by_tech %>%
+  rename("E2015" = "x2015",
+         "E2020" = "x2020",
+         "E2025" = "x2025",
+         "E2030" = "x2030",
+         "E2035" = "x2035",
+         "E2040" = "x2040",
+         "E2045" = "x2045",
+         "E2050" = "x2050")
+
+emisin <- emis_summary %>%
+  left_join(inputs_summary, by = c("scenario", "region", "sector"))
+
+emisinout <- emisin %>%
+  left_join(outputs_summary, by = c("scenario", "region", "sector")) %>%
+  rename("units.i" = "units.x", "units.o" = "units.y")
+
+emisinoutpop <- emisinout %>%
+  left_join(pop_by_reg, by = c("scenario", "region"))
+
+emisinoutpopgdp <- emisinoutpop %>%
+  left_join(gdp_per_capita_ppp_by_reg, by = c("scenario", "region")) 
+
+# final calculation of Kaya Identity factors
+#emisinoutpopgdp$GDPperPOP2015 <-with(emisinoutpopgdp, GDPperPOP2015 <- X2015.y / X2015.x)
+
+# column 47~54 : GDP
+# Column 37~44: POP
+#
+# GDP/POP
+
+emisinoutpopgdp <- emisinoutpopgdp %>%
+  mutate(
+    GDPperPOP2015 = x2015.y,
+    GDPperPOP2020 = x2020.y,
+    GDPperPOP2025 = x2025.y,
+    GDPperPOP2030 = x2030.y,
+    GDPperPOP2035 = x2035.y,
+    GDPperPOP2040 = x2040.y,
+    GDPperPOP2045 = x2045.y,
+    GDPperPOP2050 = x2050.y
+  )
+
+# Energy Out / GDP
+
+emisinoutpopgdp <- emisinoutpopgdp %>%
+  mutate(
+    OutperGDP2015 = Out2015 / (x2015.y * x2015.x),
+    OutperGDP2020 = Out2020 / (x2020.y * x2020.x),
+    OutperGDP2025 = Out2025 / (x2025.y * x2025.x),
+    OutperGDP2030 = Out2030 / (x2030.y * x2030.x),
+    OutperGDP2035 = Out2035 / (x2035.y * x2035.x),
+    OutperGDP2040 = Out2040 / (x2040.y * x2040.x),
+    OutperGDP2045 = Out2045 / (x2045.y * x2045.x),
+    OutperGDP2050 = Out2050 / (x2050.y * x2050.x)
+  )
+
+# Energy In / Energy out
+emisinoutpopgdp <- emisinoutpopgdp %>%
+  mutate(
+    InperOut2015 = In2015 / Out2015,
+    InperOut2020 = In2020 / Out2020,
+    InperOut2025 = In2025 / Out2025,
+    InperOut2030 = In2030 / Out2030,
+    InperOut2035 = In2035 / Out2035,
+    InperOut2040 = In2040 / Out2040,
+    InperOut2045 = In2045 / Out2045,
+    InperOut2050 = In2050 / Out2050
+  )
+
+# Emission / Energy In
+emisinoutpopgdp <- emisinoutpopgdp %>%
+  mutate(
+    EmisperIn2015 = E2015 / In2015,
+    EmisperIn2020 = E2020 / In2020,
+    EmisperIn2025 = E2025 / In2025,
+    EmisperIn2030 = E2030 / In2030,
+    EmisperIn2035 = E2035 / In2035,
+    EmisperIn2040 = E2040 / In2040,
+    EmisperIn2045 = E2045 / In2045,
+    EmisperIn2050 = E2050 / In2050
+  )
+
+#Emission = Population*GDPperPop*EnergyOutperGDP*EnergyInperEnergyOut*EmissionperEnergyIn
+emisinoutpopgdp <- emisinoutpopgdp %>%
+  mutate(
+    Emis2015 = x2015.x * GDPperPOP2015 * OutperGDP2015 * InperOut2015 * EmisperIn2015,
+    Emis2020 = x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020,
+    Emis2025 = x2025.x * GDPperPOP2025 * OutperGDP2025 * InperOut2025 * EmisperIn2025,
+    Emis2030 = x2030.x * GDPperPOP2030 * OutperGDP2030 * InperOut2030 * EmisperIn2030,
+    Emis2035 = x2035.x * GDPperPOP2035 * OutperGDP2035 * InperOut2035 * EmisperIn2035,
+    Emis2040 = x2040.x * GDPperPOP2040 * OutperGDP2040 * InperOut2040 * EmisperIn2040,
+    Emis2045 = x2045.x * GDPperPOP2045 * OutperGDP2045 * InperOut2045 * EmisperIn2045,
+    Emis2050 = x2050.x * GDPperPOP2050 * OutperGDP2050 * InperOut2050 * EmisperIn2050
+  )
+
+# Calculations for wedges charts
+emisinoutpopgdp <- emisinoutpopgdp %>%
+  mutate(
+    WPop2020 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WPop2025 = (x2025.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WPop2030 = (x2030.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WPop2035 = (x2035.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WPop2040 = (x2040.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WPop2045 = (x2045.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WPop2050 = (x2050.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020
+  )
+
+emisinoutpopgdp <- emisinoutpopgdp %>%
+  mutate(
+    WGDPperPOP2020 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WGDPperPOP2025 = (x2020.x * GDPperPOP2025 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WGDPperPOP2030 = (x2020.x * GDPperPOP2030 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WGDPperPOP2035 = (x2020.x * GDPperPOP2035 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WGDPperPOP2040 = (x2020.x * GDPperPOP2040 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WGDPperPOP2045 = (x2020.x * GDPperPOP2045 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WGDPperPOP2050 = (x2020.x * GDPperPOP2050 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020
+  )
+
+emisinoutpopgdp <- emisinoutpopgdp %>%
+  mutate(
+    WOutperGDP2020 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WOutperGDP2025 = (x2020.x * GDPperPOP2020 * OutperGDP2025 * InperOut2020 * EmisperIn2020) - E2020,
+    WOutperGDP2030 = (x2020.x * GDPperPOP2020 * OutperGDP2030 * InperOut2020 * EmisperIn2020) - E2020,
+    WOutperGDP2035 = (x2020.x * GDPperPOP2020 * OutperGDP2035 * InperOut2020 * EmisperIn2020) - E2020,
+    WOutperGDP2040 = (x2020.x * GDPperPOP2020 * OutperGDP2040 * InperOut2020 * EmisperIn2020) - E2020,
+    WOutperGDP2045 = (x2020.x * GDPperPOP2020 * OutperGDP2045 * InperOut2020 * EmisperIn2020) - E2020,
+    WOutperGDP2050 = (x2020.x * GDPperPOP2020 * OutperGDP2050 * InperOut2020 * EmisperIn2020) - E2020
+  )
+
+emisinoutpopgdp <- emisinoutpopgdp %>%
+  mutate(
+    WInperOut2020 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WInperOut2025 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2025 * EmisperIn2020) - E2020,
+    WInperOut2030 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2030 * EmisperIn2020) - E2020,
+    WInperOut2035 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2035 * EmisperIn2020) - E2020,
+    WInperOut2040 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2040 * EmisperIn2020) - E2020,
+    WInperOut2045 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2045 * EmisperIn2020) - E2020,
+    WInperOut2050 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2050 * EmisperIn2020) - E2020
+  )
+
+emisinoutpopgdp <- emisinoutpopgdp %>%
+  mutate(
+    WEmisperIn2020 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2020) - E2020,
+    WEmisperIn2025 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2025) - E2020,
+    WEmisperIn2030 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2030) - E2020,
+    WEmisperIn2035 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2035) - E2020,
+    WEmisperIn2040 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2040) - E2020,
+    WEmisperIn2045 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2045) - E2020,
+    WEmisperIn2050 = (x2020.x * GDPperPOP2020 * OutperGDP2020 * InperOut2020 * EmisperIn2050) - E2020
+  )
+
+# Save the data frame to an .rds file
+saveRDS(emisinoutpopgdp, file = here("output/data/emisinoutpopgdp.rds"))
+
+```

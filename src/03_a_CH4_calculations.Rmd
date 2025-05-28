@@ -1,0 +1,78 @@
+---
+title: "CH4"
+author: 
+  - Farnaz Nojavan
+  - Joyce Kim
+output: html_document
+date: "2025-05-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages, include = FALSE}
+# load necessary packages
+source(here::here("src/packages.R"))
+source(here::here("src/functions.R"))
+```
+
+```{r read emisinoutpopgdp data }
+emisinoutpopgdp <- readRDS(here("output/data/emisinoutpopgdp.rds"))
+```
+
+
+```{r calculate sectoral-damage for CH4}
+# Repeat the filtering scenario process for CH4 in the other policy scenario
+
+sectoral_ch4 <- emisinoutpopgdp %>%
+  filter(scenario == "GLIMPSE1.2-Ref_damages" & ghg == "CH4") %>%
+  group_by(region, sector) %>%
+  summarize(across(starts_with("W"), 
+                   \(x) sum(x, na.rm=TRUE), # Use anonymous function for additional arguments
+                   .names = "sum_{col}")) %>% 
+  ungroup() %>% 
+  mutate(
+    CH4in2020 = rowSums(select(., ends_with("2020")), na.rm = TRUE),
+    CH4in2025 = rowSums(select(., ends_with("2025")), na.rm = TRUE),
+    CH4in2030 = rowSums(select(., ends_with("2030")), na.rm = TRUE),
+    CH4in2035 = rowSums(select(., ends_with("2035")), na.rm = TRUE),
+    CH4in2040 = rowSums(select(., ends_with("2040")), na.rm = TRUE),
+    CH4in2045 = rowSums(select(., ends_with("2045")), na.rm = TRUE),
+    CH4in2050 = rowSums(select(., ends_with("2050")), na.rm = TRUE)
+  ) %>% 
+  mutate(region_sector = str_c(region, sector, sep = ":")) %>% 
+  group_by(region) %>% 
+  mutate(
+    rank_2035 = min_rank(CH4in2035),
+    rank_2050 = min_rank(CH4in2050)
+  ) %>%
+  ungroup() #Ensure no lingering groupings
+```
+
+```{r calculate sectoral_deepdecarbo for each state, include = FALSE}
+state_year_sectoral_ch4 <- create_state_year_sectoral(sectoral_data = sectoral_ch4,
+                                                             states = c("AK", "CA", "NY"),
+                                                             years = c(2035, 2050),
+                                                             scenario = "GLIMPSE1.2-Ref_damages",
+                                                             ghg = "CH4")
+
+# Access individual data frames using state_year_sectoral_ch4[["AK_2035"]], state_sectoral_ref_damage[["CA_2050"]], etc.
+```
+
+
+
+```{r create sectoral plot for specific year state}
+create_state_year_specific_sectoral_plot(state_year_sectoral_data = state_year_sectoral_ch4,
+                                         state = "AK",
+                                         year = 2035, 
+                                         ghg = "CH4")
+```
+```{r create and save plots CH4}
+
+# Call the function with the list and desired output folder
+create_and_save_plots(state_year_sectoral_ch4,
+                      emission_type = "CH4",
+                      output_folder ="output/figures/CH4",
+                      type = "CH4")
+```

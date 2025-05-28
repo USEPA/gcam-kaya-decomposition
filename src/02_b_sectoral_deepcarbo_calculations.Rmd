@@ -1,0 +1,93 @@
+---
+title: "Sectoral Calculations"
+author: 
+  - Farnaz Nojavan
+  - Joyce Kim
+output: html_document
+date: "2025-05-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r packages, include = FALSE}
+# load necessary packages
+source(here::here("src/packages.R"))
+source(here::here("src/functions.R"))
+```
+
+```{r read emisinoutpopgdp data }
+emisinoutpopgdp <- readRDS(here("output/data/emisinoutpopgdp.rds"))
+```
+
+
+```{r calculate sectoral-deepdecarbo}
+# Filter policy case and rank by emissions calculated from Kaya Identity. Note that CO2 removal sector is treated differently by adding the negative emission directly captured by the technology
+
+sectoral_deepdecarbo <- emisinoutpopgdp %>%
+  filter(scenario == "GLIMPSEv1.01-DeepDecarb" & ghg == "CO2" & units.o == "EJ") %>%
+  group_by(region, sector) %>%
+  mutate(across(starts_with("W"), 
+                ~ sum(.x, na.rm = TRUE), 
+                .names = "sum_{col}")) %>%
+  ungroup() %>%
+  select(region, sector,  E2020, E2025, E2030, E2035, E2040, E2045, E2050, starts_with("sum_")) %>%  # Keep E2020, E2025, etc., and the summarized columns
+  mutate(
+    co2in2020 = if_else(sector == "CO2 removal", E2020, rowSums(select(., starts_with("sum") & ends_with("2020")), na.rm = TRUE)),
+    co2in2025 = if_else(sector == "CO2 removal", E2025, rowSums(select(., starts_with("sum") & ends_with("2025")), na.rm = TRUE)),
+    co2in2030 = if_else(sector == "CO2 removal", E2030, rowSums(select(., starts_with("sum") & ends_with("2030")), na.rm = TRUE)),
+    co2in2035 = if_else(sector == "CO2 removal", E2035, rowSums(select(., starts_with("sum") & ends_with("2035")), na.rm = TRUE)),
+    co2in2040 = if_else(sector == "CO2 removal", E2040, rowSums(select(., starts_with("sum") & ends_with("2040")), na.rm = TRUE)),
+    co2in2045 = if_else(sector == "CO2 removal", E2045, rowSums(select(., starts_with("sum") & ends_with("2045")), na.rm = TRUE)),
+    co2in2050 = if_else(sector == "CO2 removal", E2050, rowSums(select(., starts_with("sum") & ends_with("2050")), na.rm = TRUE))
+  ) %>%
+  mutate(region_sector = str_c(region, sector, sep = ":")) %>%
+  group_by(region) %>%
+  mutate(
+    rank_2035 = min_rank(co2in2035),
+    rank_2050 = min_rank(co2in2050)
+  )
+
+# Define the directory path
+dir_path <- here("output/data")
+
+# Check if the directory exists, if not, create it
+if (!dir.exists(dir_path)) {
+  dir.create(dir_path, recursive = TRUE)
+}
+
+# Write the CSV file with the file name specified in the function call
+write.csv(sectoral_deepdecarbo, file.path(dir_path, "sectoral_deepdecarbo.csv"), row.names = FALSE)
+
+```
+
+```{r calculate sectoral_deepdecarbo for each state, include = FALSE}
+state_year_sectoral_deepc <- create_state_year_sectoral(sectoral_data = sectoral_deepdecarbo,
+                                                        states = c("AK", "CA", "NY"),
+                                                        years = c(2035, 2050), 
+                                                        scenario = "GLIMPSEv1.01-DeepDecarb",
+                                                        ghg = "CO2",
+                                                        units.o = "EJ" )
+
+# Access individual data frames using state_year_sectoral_deepc[["AK_2035"]], state_year_sectoral_deepc[["CA_2050"]], etc.
+```
+
+```{r create sectoral plot for specific year state}
+#Plot stacked-bar chart of emission decomposition factors for specific state and specific year
+create_state_year_specific_sectoral_plot(state_year_sectoral_data = state_year_sectoral_deepc,
+                                         state = "CA",
+                                         year = 2050, 
+                                         ghg = "CO2",
+                                         type = "deepcarbo")
+```
+
+```{r create and save plots deepc}
+
+# Call the function with the list and desired output folder
+# Save the figures of selected states and years into the output folder
+create_and_save_plots(state_year_sectoral_deepc,
+                                  emission_type = "CO2",
+                                  output_folder ="output/figures/deepc")
+```
