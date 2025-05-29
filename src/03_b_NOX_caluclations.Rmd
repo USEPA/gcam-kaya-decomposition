@@ -27,7 +27,7 @@ emisinoutpopgdp <- readRDS(here("output/data/emisinoutpopgdp.rds"))
 ```{r calculate sectoral-damage for NOx}
 # Repeat the filtering scenario process for NOx in the other policy scenario
 
-sectoral_ref_damage <- emisinoutpopgdp %>%
+sectoral_nox <- emisinoutpopgdp %>%
   filter(scenario == "GLIMPSE1.2-Ref_damages" & ghg == "NOx") %>%
   group_by(region, sector) %>%
   summarize(across(starts_with("W"), 
@@ -53,7 +53,7 @@ sectoral_ref_damage <- emisinoutpopgdp %>%
 ```
 
 ```{r calculate sectoral_deepdecarbo for each state, include = FALSE}
-state_year_sectoral_ref_damage <- create_state_year_sectoral(sectoral_data = sectoral_ref_damage,
+state_year_sectoral_nox <- create_state_year_sectoral(sectoral_data = sectoral_nox,
                                                              states = c("AK", "CA", "NY"),
                                                              years = c(2035, 2050),
                                                              scenario = "GLIMPSE1.2-Ref_damages",
@@ -65,7 +65,7 @@ state_year_sectoral_ref_damage <- create_state_year_sectoral(sectoral_data = sec
 
 
 ```{r create sectoral plot for specific year state}
-create_state_year_specific_sectoral_plot(state_year_sectoral_data = state_year_sectoral_ref_damage,
+create_state_year_specific_sectoral_plot(state_year_sectoral_data = state_year_sectoral_nox,
                                          state = "AK",
                                          year = 2035, 
                                          ghg = "NOx")
@@ -74,7 +74,7 @@ create_state_year_specific_sectoral_plot(state_year_sectoral_data = state_year_s
 ```{r create and save plots NOx}
 # Call the function with the list and desired output folder
 # Save the figures of selected states and years into the output folder
-create_and_save_plots(state_year_sectoral_ref_damage,
+create_and_save_plots(state_year_sectoral_nox,
                                   emission_type = "NOx",
                                   output_folder ="output/figures/NOX",
                       type = "NOX")
