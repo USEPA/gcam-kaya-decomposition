@@ -74,9 +74,93 @@ ggplot(df_long_state_boxplot, aes(x = sector, y = CO2_Reduction)) +
        x = "Sector",
        y = "CO2 Emission Reductions in 2050") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
-  facet_grid(~ category, scales = "free_x", space = "free_x")  # Facet by category
+  facet_grid(~ category, scales = "free_x", space = "free_x")  # Facet by category 
+
 ```
 
+```{r horizontal Boxplot State}
+
+ggplot(df_long_state_boxplot, aes(x = sector, y = CO2_Reduction)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(aes(color = State), width = 0.2, alpha = 0.7) +
+  geom_text(aes(label = State, color = State), hjust = -0.3, size = 3) +
+  scale_color_viridis_d(option = "D") +
+  coord_flip() +  # This flips the coordinates to make the box plot horizontal
+  theme_minimal() +
+  theme(legend.position = "none")+
+  labs(title = "Sectoral Contributions (%) for States' CO2 Emission Reductions in 2050, Decarbonization minus Reference",
+       x = "Sector",
+       y = "CO2 Emission Reductions in 2050") 
+```
+```{r boxplot per category-vertical}
+
+# Get the unique categories
+categories <- unique(df_long_state_boxplot$category)
+
+# Create a plot for each category
+plots <- lapply(categories, function(cat) {
+  # Filter data for the current category
+  df_subset <- df_long_state_boxplot[df_long_state_boxplot$category == cat, ]
+  
+  # Generate the plot for the current category
+  ggplot(df_subset, aes(x = sector, y = CO2_Reduction)) +
+    geom_boxplot(outlier.shape = NA, width = 0.5) +
+    geom_jitter(aes(color = State), width = 0.1, alpha = 0.3) +
+    geom_text_repel(aes(label = State, color = State), size = 3, max.overlaps = 10, 
+                    position = position_jitter(width = 0.1, height = 0)) + # Apply jitter to labels
+    scale_color_viridis_d(option = "D") +
+    theme_minimal() +
+    labs(
+      title = paste("Sectoral Contributions (%) for", cat, "Category"),
+      x = "Sector",
+      y = "CO2 Emission Reductions in 2050"
+    ) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      legend.position = "none"
+    )
+})
+
+# Print each plot
+for (plot in plots) {
+  print(plot)
+}
+```
+
+```{r boxplot per category-horizontal}
+
+# Get the unique categories
+categories <- unique(df_long_state_boxplot$category)
+
+# Create a plot for each category
+plots <- lapply(categories, function(cat) {
+  # Filter data for the current category
+  df_subset <- df_long_state_boxplot[df_long_state_boxplot$category == cat, ]
+  
+  # Generate the plot for the current category
+  ggplot(df_subset, aes(y = sector, x = CO2_Reduction)) + # Swap x and y for horizontal boxes
+    geom_boxplot(outlier.shape = NA, width = 0.5) +
+    geom_jitter(aes(color = State), height = 0.1, alpha = 0.3) + # Adjust jitter height
+    geom_text_repel(aes(label = State, color = State), size = 3, max.overlaps = 10, 
+                    position = position_jitter(height = 0.1, width = 0)) + # Apply jitter to labels
+    scale_color_viridis_d(option = "D") +
+    theme_minimal() +
+    labs(
+      title = paste("Sectoral Contributions (%) for", cat, "Category"),
+      y = "Sector", # Adjust labels
+      x = "CO2 Emission Reductions in 2050"
+    ) +
+    theme(
+      axis.text.y = element_text(angle = 0, hjust = 1), # Adjust text orientation
+      legend.position = "none"
+    )
+})
+
+# Print each plot
+for (plot in plots) {
+  print(plot)
+}
+```
 
 
 ```{r Radar Chart}
