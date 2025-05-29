@@ -59,7 +59,7 @@ create_state_year_sectoral <- function(states = state.abb,
       #   stop("Unsupported GHG type")
       # }
       
-      supported_ghg <- c("CO2", "NOx", "PM2.5", "CH4", "N2O")
+      supported_ghg <- c("CO2", "NOx", "PM2.5", "CH4", "N2O", "SO2")
       
       if (!(ghg %in% supported_ghg)) {
         stop("Unsupported GHG type")
