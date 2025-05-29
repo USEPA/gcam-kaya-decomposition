@@ -22,18 +22,18 @@ The code was run using R version 4.4.2 implemented in R Studio running in Micros
 
     -   The code used the following R-packages.
 
-    | Package   | Used for                                     |
-    |-----------|----------------------------------------------|
-    | knitr     | Processing R-markdown                        |
-    | tidyverse | Data processing and graphing                 |
-    | here      | Finding files                                |
-    | janitor   | Cleaning data for analysis                   |
-    | writexl   | Saving outputs to Excel files                |
-    | readxl    | Reading Excel files                          |
-    | viridis   | Color palettes                               |
-    | fmsb      | Creating spider charts                       |
-    | plotly    | Creating charts and plots                    |
-    | reshape2  | Reshaping data between wide and long formats |
+        | Package   | Used for                                     |
+        |-----------|----------------------------------------------|
+        | knitr     | Processing R-markdown                        |
+        | tidyverse | Data processing and graphing                 |
+        | here      | Finding files                                |
+        | janitor   | Cleaning data for analysis                   |
+        | writexl   | Saving outputs to Excel files                |
+        | readxl    | Reading Excel files                          |
+        | viridis   | Color palettes                               |
+        | fmsb      | Creating spider charts                       |
+        | plotly    | Creating charts and plots                    |
+        | reshape2  | Reshaping data between wide and long formats |
 
 -   **`functions.R`**:
 
@@ -59,9 +59,9 @@ The code was run using R version 4.4.2 implemented in R Studio running in Micros
 
     -   The second step guides us in ranking sectors and technologies within each state based on their contribution to CO<sub>2</sub> emission reduction or growth.
 
--   **`03_a_CH4_calculations.Rmd`**, **`03_b_NOX_calculations.Rmd`**, and **`03_c_PM25_calculations.Rmd`**:
+-   **`03_a_SO2_calculations.Rmd`**, **`03_b_NOX_calculations.Rmd`**, and **`03_c_PM25_calculations.Rmd`**:
 
-    -   The third step provides optional processes to calculate decomposition factors for other pollutants such as CH<sub>4</sub>, NOx, or PM<sub>2.5</sub>.
+    -   The third step provides optional processes to calculate decomposition factors for other pollutants such as SO<sub>2</sub>, NOx, or PM<sub>2.5</sub>.
 
 -   **`04_delta_calculations.Rmd`**:
 
