@@ -93,7 +93,6 @@ ggplot(df_long_state_boxplot, aes(x = sector, y = CO2_Reduction)) +
        y = "CO2 Emission Reductions in 2050") 
 ```
 ```{r boxplot per category-vertical}
-
 # Get the unique categories
 categories <- unique(df_long_state_boxplot$category)
 
@@ -102,12 +101,21 @@ plots <- lapply(categories, function(cat) {
   # Filter data for the current category
   df_subset <- df_long_state_boxplot[df_long_state_boxplot$category == cat, ]
   
+  # Remove sectors with no values
+  df_subset <- df_subset[!is.na(df_subset$CO2_Reduction), ]
+  
+  # Determine sectors with data
+  sectors_with_data <- unique(df_subset$sector)
+  
+  # Filter out sectors without data
+  df_subset <- df_subset[df_subset$sector %in% sectors_with_data, ]
+  
   # Generate the plot for the current category
   ggplot(df_subset, aes(x = sector, y = CO2_Reduction)) +
     geom_boxplot(outlier.shape = NA, width = 0.5) +
     geom_jitter(aes(color = State), width = 0.1, alpha = 0.3) +
     geom_text_repel(aes(label = State, color = State), size = 3, max.overlaps = 10, 
-                    position = position_jitter(width = 0.1, height = 0)) + # Apply jitter to labels
+                    position = position_jitter(width = 0.1, height = 0)) +
     scale_color_viridis_d(option = "D") +
     theme_minimal() +
     labs(
@@ -128,7 +136,6 @@ for (plot in plots) {
 ```
 
 ```{r boxplot per category-horizontal}
-
 # Get the unique categories
 categories <- unique(df_long_state_boxplot$category)
 
@@ -137,21 +144,30 @@ plots <- lapply(categories, function(cat) {
   # Filter data for the current category
   df_subset <- df_long_state_boxplot[df_long_state_boxplot$category == cat, ]
   
+  # Remove sectors with no values
+  df_subset <- df_subset[!is.na(df_subset$CO2_Reduction), ]
+  
+  # Determine sectors with data
+  sectors_with_data <- unique(df_subset$sector)
+  
+  # Filter out sectors without data
+  df_subset <- df_subset[df_subset$sector %in% sectors_with_data, ]
+  
   # Generate the plot for the current category
-  ggplot(df_subset, aes(y = sector, x = CO2_Reduction)) + # Swap x and y for horizontal boxes
+  ggplot(df_subset, aes(y = sector, x = CO2_Reduction)) +
     geom_boxplot(outlier.shape = NA, width = 0.5) +
-    geom_jitter(aes(color = State), height = 0.1, alpha = 0.3) + # Adjust jitter height
+    geom_jitter(aes(color = State), height = 0.1, alpha = 0.3) +
     geom_text_repel(aes(label = State, color = State), size = 3, max.overlaps = 10, 
-                    position = position_jitter(height = 0.1, width = 0)) + # Apply jitter to labels
+                    position = position_jitter(height = 0.1, width = 0)) +
     scale_color_viridis_d(option = "D") +
     theme_minimal() +
     labs(
       title = paste("Sectoral Contributions (%) for", cat, "Category"),
-      y = "Sector", # Adjust labels
+      y = "Sector",
       x = "CO2 Emission Reductions in 2050"
     ) +
     theme(
-      axis.text.y = element_text(angle = 0, hjust = 1), # Adjust text orientation
+      axis.text.y = element_text(angle = 0, hjust = 1),
       legend.position = "none"
     )
 })
