@@ -2,7 +2,7 @@
 title: "Untitled"
 author: 
   - Farnaz Nojavan
-  - Joyce Kim
+  - Gyungwon Joyce Kim
 output: html_document
 date: "2025-05-19"
 ---
@@ -65,7 +65,7 @@ write.csv(sectoral_ref, file.path(dir_path, "sectoral_ref.csv"), row.names = FAL
 
 ```{r state_sectoral_ref for each year/state}
 state_year_sectoral_ref <- create_state_year_sectoral(sectoral_data = sectoral_ref,
-                                                      states = c("AL", "CA", "NY"), 
+                                                      states = c("AL","CA","NY"), # Note: Change or add states. 
                                                      years = c(2035, 2050), 
                                                      scenario = "GLIMPSEv1.01-Reference", 
                                                      ghg = "CO2",
@@ -76,8 +76,8 @@ state_year_sectoral_ref <- create_state_year_sectoral(sectoral_data = sectoral_r
 ```{r create sectoral data & plot for specific year state}
 #Plot stacked-bar chart of emission decomposition factors for specific state and specific year
 create_state_year_specific_sectoral_plot(state_year_sectoral_data = state_year_sectoral_ref,
-                                         state = "AL",
-                                         year = 2035, 
+                                         state = "CA",
+                                         year = 2050, 
                                          ghg = "CO2",
                                          type = "ref")
 ```

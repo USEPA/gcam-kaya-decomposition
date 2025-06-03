@@ -2,7 +2,7 @@
 title: "PM 2.5"
 author: 
   - Farnaz Nojavan
-  - Joyce Kim
+  - Gyungwon Joyce Kim
 output: html_document
 date: "2025-05-19"
 ---
@@ -65,7 +65,7 @@ state_year_sectoral_pm25 <- create_state_year_sectoral(sectoral_data = sectoral_
 
 ```{r create sectoral plot for specific year state}
 create_state_year_specific_sectoral_plot(state_year_sectoral_data = state_year_sectoral_pm25,
-                                         state = "AK",
+                                         state = "CA",
                                          year = 2035, 
                                          ghg = "PM2.5")
 ```

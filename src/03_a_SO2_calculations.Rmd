@@ -2,7 +2,7 @@
 title: "CH4"
 author: 
   - Farnaz Nojavan
-  - Joyce Kim
+  - Gyungwon Joyce Kim
 output: html_document
 date: "2025-05-19"
 ---
@@ -22,7 +22,7 @@ emisinoutpopgdp <- readRDS(here("output/data/emisinoutpopgdp.rds"))
 ```
 
 
-```{r calculate sectoral-damage for CH4}
+```{r calculate sectoral-damage for SO2}
 # Repeat the filtering scenario process for CH4 in the other policy scenario
 
 sectoral_so2 <- emisinoutpopgdp %>%
@@ -64,7 +64,7 @@ state_year_sectoral_so2 <- create_state_year_sectoral(sectoral_data = sectoral_s
 
 ```{r create sectoral plot for specific year state}
 create_state_year_specific_sectoral_plot(state_year_sectoral_data = state_year_sectoral_so2,
-                                         state = "AK",
+                                         state = "CA",
                                          year = 2035, 
                                          ghg = "SO2")
 ```

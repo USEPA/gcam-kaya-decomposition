@@ -2,7 +2,7 @@
 title: "kaya"
 author: 
   - Farnaz Nojavan
-  - Joyce Kim
+  - Gyungwon Joyce Kim
 date: "2025-05-19"
 output: html_document
 ---
