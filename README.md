@@ -20,18 +20,17 @@ For more information about the GLIMPSE user interface and GCAM-USA model, please
 
 The `` `data` `` folder in this repository provides five input files for the Kaya decomposition analysis, which are taken out from the GCAM ModelInterface queries. GCAM inputs include population growth, GDP growth, resource availability, and technology development by sector, and its outputs include energy technology penetrations, fuel use, and emissions by technology, which are sources of the decomposition analysis. The data are state-level data for all 50 U.S. states from 2020 to 2050, presented in 5-year intervals. The ModelInterface queries that we utilized for the decomposition analysis include:
 
-  (1) All emissions by technology
+(1) All emissions by technology
 
-  (2) Inputs by technology
+(2) Inputs by technology
 
-  (3) Outputs by technology
+(3) Outputs by technology
 
-  (4) Population by state
+(4) Population by state
 
-  (5) GDP per capita by state
+(5) GDP per capita by state
 
 The (1)-(3) queries provide data by scenarios while (4) population by state and (5) GDP per capita by state queries project data over the period but stay consistent by scenarios.
-
 
 The following is a description of how the five inputs were cleaned and modified from the raw output data of the ModelInterface.
 
@@ -53,15 +52,15 @@ All five files are started with GLIMPSEv1.01-Reference and GLIMPSEv1.01-DeepDeca
 
 This repository contains data from five scenarios. Two scenarios were initially considered for the decomposition analysis of CO<sub>2</sub> emission. Three scenarios were added later when GLIMPSE version 1.2 was available.
 
-  (1) **Reference scenario (GLIMPSE v1.01-Reference)** is based on the GCAM-USA 7.0 reference scenario where there is business as usual,
+(1) **Reference scenario (GLIMPSE v1.01-Reference)** is based on the GCAM-USA 7.0 reference scenario where there is business as usual,
 
-  (2) **Alternative policy scenario (GLIMPSE v1.01-DeepDecarb)** is the GLIMPSE v1.01-Reference scenario with a CO\<sub\>2\</sub\> emission constraint that reaches net-zero in 2050.
+(2) **Alternative policy scenario (GLIMPSE v1.01-DeepDecarb)** is the GLIMPSE v1.01-Reference scenario with a CO<sub>2</sub> emission constraint that reaches net-zero in 2050.
 
-  (3) **GLIMPSE v1.2-Reference-damage** is based on the GCAM-USA 7.1 reference scenario, but includes updated regulations and policies that would impact the evolution of the energy system. It includes the Regional Greenhouse Gas Initiative (RGGI), state-specific renewable portfolio standards (RPS) and clean energy standards, technology subsidies associated with the Inflation Reduction Act (IRA), and zero-emission electric vehicle market share estimates for light, medium, and heavy-duty vehicles.
+(3) **GLIMPSE v1.2-Reference-damage** is based on the GCAM-USA 7.1 reference scenario, but includes updated regulations and policies that would impact the evolution of the energy system. It includes the Regional Greenhouse Gas Initiative (RGGI), state-specific renewable portfolio standards (RPS) and clean energy standards, technology subsidies associated with the Inflation Reduction Act (IRA), and zero-emission electric vehicle market share estimates for light, medium, and heavy-duty vehicles.
 
-  (4) **GLIMPSE v1.2-damage_all_15pct** is the GLIMPSE v1.2-Reference-damage scenario with an added constraint to reduce the health damages from the national level of total emissions by 15% in 2050, relative to the reference levels in 2020.
+(4) **GLIMPSE v1.2-damage_all_15pct** is the GLIMPSE v1.2-Reference-damage scenario with an added constraint to reduce the health damages from the national level of total emissions by 15% in 2050, relative to the reference levels in 2020.
 
-  (5) **GLIMPSE v1.2-state_damages** is the GLIMPSE v1.2-Reference-damage scenario with an added constraint to reduce the health damages from each state's emissions by 15% in 2050, relative to the reference level of each state's emissions in 2020.
+(5) **GLIMPSE v1.2-state_damages** is the GLIMPSE v1.2-Reference-damage scenario with an added constraint to reduce the health damages from each state's emissions by 15% in 2050, relative to the reference level of each state's emissions in 2020.
 
 The scenarios in this repository are an example of various scenarios that can be analyzed through GCAM modeling. Users of this repository could apply their own scenario data to conduct the Kaya decomposition analysis using the R code in this repository.
 
