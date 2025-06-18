@@ -50,21 +50,21 @@ All five files are started with GLIMPSEv1.01-Reference and GLIMPSEv1.01-DeepDeca
 
 ## Scenario Design
 
-This repository contains data from five scenarios. Two scenarios were initially considered for the decomposition analysis of CO<sub>2</sub> emission and three scenarios were added later when GLIMPSE version 1.2 was available. The initial two scenarios include:
+This repository contains data from five scenarios. Two scenarios were initially considered for the decomposition analysis of CO<sub>2</sub> emission. Three scenarios were added later when GLIMPSE version 1.2 was available.
 
 (1) **Reference scenario (GLIMPSE v1.01-Reference)** is based on the GCAM-USA 7.0 reference scenario where there is business as usual,
 
-(2) **Alternative policy scenario (GLIMPSE v1.01-DeepDecarb)** which includes a CO<sub>2</sub> emission constraint that reaches net-zero in 2050.
+(2) **Alternative policy scenario (GLIMPSE v1.01-DeepDecarb)** is the GLIMPSE v1.01-Reference scenario with a CO<sub>2</sub> emission constraint that reaches net-zero in 2050.
 
-Additional technology and health damage scenarios were added, including:
+<!-- -->
 
-(3) **GLIMPSE v1.2-Reference-damage** is based on the GCAM-USA 7.1 reference scenario, but includes current regulations and policies that would impact the evolution of the energy system. It includes the Regional Greenhouse Gas Initiative (RGGI), state-specific renewable portfolio standards (RPS) and clean energy standards, technology subsidies associated with the Inflation Reduction Act (IRA), and zero-emission electric vehicle market share estimates for light, medium, and heavy-duty vehicles.
+(3) **GLIMPSE v1.2-Reference-damage** is based on the GCAM-USA 7.1 reference scenario, but includes updated regulations and policies that would impact the evolution of the energy system. It includes the Regional Greenhouse Gas Initiative (RGGI), state-specific renewable portfolio standards (RPS) and clean energy standards, technology subsidies associated with the Inflation Reduction Act (IRA), and zero-emission electric vehicle market share estimates for light, medium, and heavy-duty vehicles.
 
 (4) **GLIMPSE v1.2-damage_all_15pct** is the GLIMPSE v1.2-Reference-damage scenario with an added constraint to reduce the health damages from the national level of total emissions by 15% in 2050, relative to the reference levels in 2020.
 
 (5) **GLIMPSE v1.2-state_damages** is the GLIMPSE v1.2-Reference-damage scenario with an added constraint to reduce the health damages from each state's emissions by 15% in 2050, relative to the reference level of each state's emissions in 2020.
 
-The scenarios in input data are an example of various scenarios that can be analyzed through GCAM modeling. Users of this repository can apply their own scenario data to conduct the Kaya decomposition analysis using the R code in this repository.
+The scenarios in this repository are an example of various scenarios that can be analyzed through GCAM modeling. Users of this repository could apply their own scenario data to conduct the Kaya decomposition analysis using the R code in this repository.
 
 ## Decomposition Methodologies
 
