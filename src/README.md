@@ -53,7 +53,7 @@ The code was run using R version 4.4.2 implemented in R Studio running in Micros
 
 -   **`01_emisinoutpopgdp_calculations.Rmd`**:
 
-    -   The first step in the decomposition analysis involves using R code to merge each dataset into one matrix and then calculate CO<sub>2</sub> emissions by each factor in each scenario. Once the CO<sub>2</sub> emissions are decomposed by the five factors, following the Kaya equation above, wedge factors are calculated to illustrate the impact of these factors on emission reductions for each state up to 2050.
+    -   The first step in the decomposition analysis involves using R code to merge each input data into one matrix and then calculate CO<sub>2</sub> emissions by each factor in each scenario. Once the CO<sub>2</sub> emissions are decomposed by the five factors, following the Kaya equation described in the main page, wedge factors are calculated to illustrate the impact of these factors on emission reductions for each state up to 2050.
 
 -   **`02_sectoral_ref_calculations.Rmd`** and **`02_a_sectoral_deepcarbo_calculations.Rmd`**:
 
