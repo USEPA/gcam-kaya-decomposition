@@ -69,4 +69,4 @@ The code was run using R version 4.4.2 implemented in R Studio running in Micros
 
 -   **`05_visualization.Rmd`**:
 
-    -   Lastly, the final step employs plot functions that are used to visualize the decomposition analysis for each state. The calculation process can be replicated for other emissions or air pollutants such as CH<sub>4</sub>, NOx, or PM<sub>2.5</sub>.
+    -   Lastly, the final step employs plot functions that are used to visualize the decomposition analysis for each state. The calculation process can be replicated for other emissions or air pollutants such as SO<sub>2</sub>, NOx, or PM<sub>2.5</sub>.
