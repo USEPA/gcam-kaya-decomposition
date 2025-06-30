@@ -2,7 +2,7 @@
 
 The purpose of this repository is to facilitate comprehensive data analysis and strategic environmental planning using Global Change Analysis Model (GCAM) modeling outputs. By providing R scripts, we aim to streamline the data processing and analysis of GCAM-USA scenario-based outputs across 50 states. The R-markdown files enable users to efficiently read, merge, and analyze outputs from GCAM ModelInterface queries. It also guides to calculate decomposition factors and rank sectors and technologies by their impact on CO<sub>2</sub> emissions or alternative air pollutants. Additionally, the repository supports visualization of data for individual states or all states collectively, making it a useful resource for state governments and other stakeholders involved in environmental and energy modeling.
 
-We combine energy systems modeling with decomposition analysis methods to investigate changes in emissions of hazardous air pollutants under alternative policy scenarios. The Kaya Identity provides a robust framework for identifying the driving forces of GHG or air pollutant emissions, facilitating development of potential reduction strategies tailored to the specific characteristics of the 50 U.S. states. When coupling with emissions projections for the 50 U.S. states, it could highlight differences and similarities of strategies with neighboring regions.
+We combine energy systems modeling with decomposition analysis methods to investigate changes in emissions of air pollutants under alternative policy scenarios. The Kaya Identity provides a robust framework for identifying the driving forces of GHG or air pollutant emissions, facilitating development of potential reduction strategies tailored to the specific characteristics of the 50 U.S. states. When coupled with emissions projections for the 50 U.S. states, it could highlight differences and similarities of strategies with neighboring regions.
 
 ## Experimental Design
 
@@ -14,13 +14,13 @@ For this repository, our focus is on using Global Change Analysis Model-USA (GCA
 
 -   **Modeling Platform:** GLIMPSE v1.01 and v1.2
 
-The GCAM-USA model can be conducted by a graphical user interface, named as [GLIMPSE (GCAM-Long-Term Interactive Multi-Pollutant Scenario Evaluator)](https://www.epa.gov/air-research/glimpse-computational-framework-supporting-state-level-environmental-and-energy). GCAM simulates the co-evolution of the economy, energy system, land use, and climate system, including how this co-evolution is shaped by policy and other external factors. GLIMPSE allows users to explore or modify GCAM scenario inputs and to take simulation outputs through its ModelInterface. The outputs of the ModelInterface is used as inputs for the Kaya decomposition analysis, which is analyzed through the R codes in this repository.
+The [GLIMPSE (GCAM-Long-Term Interactive Multi-Pollutant Scenario Evaluator)](https://www.epa.gov/air-research/glimpse-computational-framework-supporting-state-level-environmental-and-energy) developed by EPA's Office of Research and Development facilitates the GCAM-USA modeling by providing a graphical user interface. GCAM simulates the co-evolution of the economy, energy system, land use, and climate system, including how this co-evolution is shaped by policy and other external factors. GLIMPSE allows users to explore or modify GCAM scenario inputs and to take simulation outputs through its ModelInterface. The outputs of the ModelInterface is used as inputs for the Kaya decomposition analysis, which is analyzed through the R codes in this repository.
 
 For more information about the GLIMPSE user interface and GCAM-USA model, please visit EPA's GLIMPSE project repository at <https://github.com/USEPA/GLIMPSE> and GCAM repository at <https://github.com/JGCRI/gcam-core>.
 
 ## Data Sources for Decomposition Analysis
 
-The `` `data` `` folder in this repository provides five input files for the Kaya decomposition analysis, which are taken out from the GCAM ModelInterface queries. GCAM inputs include population growth, GDP growth, resource availability, and technology development by sector, and its outputs include energy technology penetrations, fuel use, and emissions by technology, which are sources of the decomposition analysis. The data are state-level data for all 50 U.S. states from 2020 to 2050, presented in 5-year intervals. The ModelInterface queries that we utilized for the decomposition analysis include:
+The `` `data` `` folder in this repository provides five input files for the Kaya decomposition analysis, which are taken out from the GCAM ModelInterface queries. GCAM inputs include population growth, GDP growth, resource availability, and technology development by sector, and its outputs include energy technology penetrations, fuel use, and emissions by technology. The inputs and outputs will be used in the decomposition analysis. The data are state-level data for all 50 U.S. states from 2020 to 2050, presented in 5-year intervals. The ModelInterface queries that we utilized for the decomposition analysis include:
 
 (1) **All emissions by technology**
 
@@ -32,11 +32,11 @@ The `` `data` `` folder in this repository provides five input files for the Kay
 
 (5) **GDP per capita by state**
 
-The (1)-(3) queries provide data by scenarios while (4) population by state and (5) GDP per capita by state queries project data over the period but stay consistent by scenarios.
+The (1)-(3) queries provide data by scenarios while (4) population by state and (5) GDP per capita by state queries project data over the period but stay consistent across scenarios.
 
 The following is a description of how the five inputs were cleaned and modified from the raw output data of the ModelInterface.
 
--   `All_emissions_by_tech_damage.csv` : This is a file created by the *All-emissions-by-technology* query. It is cleaned by deleting unnecessary columns such as date and unnecessary information, depth=1 from the raw file. This cleanup process is optional to run the Kaya decomposition analysis using the R code in this repository.
+-   `All_emissions_by_tech_damage.csv` : This is a file created by the *All-emissions-by-technology* query. The query output is cleaned by deleting unnecessary columns such as date and unnecessary information, depth=1 from the raw file. This cleanup process is optional to run the Kaya decomposition analysis using the R code in this repository.
 
 -   `Inputs_by_tech_airco2rename.csv` : This file is generated by the *Inputs-by-technology* query and cleaned up by removing unnecessary columns such as date and unnecessary information, depth=1. Additionally, it changed the name of the airCO2 sector in the *sector* column to "CO<sub>2</sub> removal" so that it conveys appropriate meaning.
 
@@ -46,13 +46,11 @@ The following is a description of how the five inputs were cleaned and modified 
 
 -   `GDP_per_capita_PPP_by_region.csv` : This file is also identical to the raw file generated by the *GDP-per-capita-by-state* query in the ModelInterface.
 
-Although the population and GDP per capita data for each state may not change according to the scenarios in GCAM modeling, the Kaya decompostion analysis is conducted based on a matrix generated by matching scenario data with states and respective years. Therefore, if additional scenarios are to be analyzed, it is necessary to add the appropriate data for those scenarios to all five inputs.
-
 The five inputs were started with GLIMPSEv1.01-Reference and GLIMPSEv1.01-DeepDecarb scenario outputs, and later three additional scenarios related with damage functions were added. The details of scenario design will be explained below. Users of this repository can also utilize it in accordance with their purpose by adding their own scenario outputs.
 
 ## Scenario Design
 
-This repository contains data from five scenarios. Two scenarios were initially considered for the decomposition analysis of CO<sub>2</sub> emission. Three scenarios were added later when GLIMPSE version 1.2 was available.
+This repository contains data from five scenarios. Two scenarios were initially considered for the decomposition analysis of CO<sub>2</sub> emission. Three scenarios were added later when GLIMPSE version 1.2 became available. At the time this repository was formed, GLIMPSE version 1.2 was the latest version.
 
 (1) **Reference scenario (GLIMPSE v1.01-Reference)** is based on the GCAM-USA 7.0 reference scenario where there is business as usual,
 
@@ -66,7 +64,7 @@ This repository contains data from five scenarios. Two scenarios were initially 
 
 The scenarios in this repository are an example of various scenarios that can be analyzed through GCAM modeling. Users of this repository could apply their own scenario data to conduct the Kaya decomposition analysis using the R code in this repository.
 
-## Decomposition Methodologies
+## Decomposition Methodology
 
 The decomposition analysis, theoretically rooted in the Kaya Identity (Kaya & Keiichi, 1997), begins with breaking down the factors of selective emissions as shown in the following equation below:
 
@@ -80,7 +78,7 @@ $$
 
 where $$C^t$$ represents the state CO<sub>2</sub> emissions in a particular year, *t*, $$P^t$$ represents the state population in the *t* year, $$G^t$$ represents the GDP by state in the t year, $$E_i^t$$ represents energy consumption of energy technology *i* in the *t* year, $$E_o^t$$ represents energy service outputs of energy technology *i* in the t year, and $$C_i^t$$ represents the carbon emissions of energy technology *i* in the *t* year.
 
-Each component represents the factors influencing emissions by breaking them down into population growth ($$P^t$$ ), GDP growth per capita ($$g^t$$), energy intensity ($$a_i^t$$), energy efficiency ($$e_i^t$$), and carbon intensity ($$I_i^t$$). The energy intensity can be lowered not only by deploying more efficient technologies, but also by adopting behavioral changes to less energy-intensive ways such as higher use of bike rails or recycling. The carbon intensity can be improved by switching fossil fuels to renewable energy or electrification. Also, deploying direct carbon capture and storage technologies is another potential way to reduce carbon intensity.
+Each component represents the factors influencing emissions by breaking them down into population growth ($$P^t$$ ), GDP growth per capita ($$g^t$$), energy intensity ($$a_i^t$$), energy efficiency ($$e_i^t$$), and carbon intensity ($$I_i^t$$). The energy intensity can be lowered not only by deploying more efficient technologies, but also by adopting behavioral changes to less energy-intensive ways such as higher use of bike rails or recycling. The carbon intensity can be improved by switching from fossil fuels to renewable energy sources. Deploying direct carbon capture and storage technologies is another potential way to reduce carbon intensity.
 
 ## R-Coding Design
 
